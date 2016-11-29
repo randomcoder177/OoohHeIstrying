@@ -11,6 +11,8 @@ public class PlayerMovement : MonoBehaviour {
 
 
     private Rigidbody rb;
+
+    // TODO: snížit rychlost pohybu do strany při skoku
     
 
 	// Use this for initialization
@@ -20,16 +22,16 @@ public class PlayerMovement : MonoBehaviour {
 	
 	}
 	
-	// Update is called once per frame
 	void FixedUpdate () {
         // Movement script
-        float horizontalAxis = Input.GetAxis("Horizontal");
-        Vector3 movementVector = new Vector3(horizontalAxis, 0, 0);
-        if (horizontalAxis != 0)
+        if (Input.GetAxis("Horizontal") != 0)
         {
-            rb.AddForce(movementVector);
+            Vector3 movementVector = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
+            rb.AddRelativeForce(movementVector * playerSpeedHorizontal);
         }
 
+
+        // Jumping
         if (Input.GetButton("Jump") && canJump == true)
         {
             rb.AddForce(Vector3.up * playerJumpStrength);
