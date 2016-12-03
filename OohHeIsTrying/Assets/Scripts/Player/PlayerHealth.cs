@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class NewBehaviourScript : MonoBehaviour {
+public class PlayerHealth : MonoBehaviour {
     public float playerHealth = 200f;
 
 	// Use this for initialization
@@ -17,6 +17,10 @@ public class NewBehaviourScript : MonoBehaviour {
 
     void OnCollisionEnter (Collision otherObject)
     {
+        if (otherObject.collider.tag == "Enemy")
+        {
+            DecreaseHealth(otherObject.collider.GetComponent<Stats>().damageOnTouch);
+        }
     }
 
     void IncreaseHealth(float boost)

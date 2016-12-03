@@ -6,14 +6,16 @@ public class PlayerMovement : MonoBehaviour {
     public float playerSpeedHorizontal = 200f;
     public float playerJumpStrength = 500f;
     public float playerSpeedLimit = 100f;
+    public float frictionWhenIdle = 2f; 
 
     public float jumpDelay = 1f;
     private bool canJump;
 
+    private float defaultFriction = 0f;
+
 
     private Rigidbody rb;
 
-    // TODO: snížit rychlost pohybu do strany při skoku
     
 
 	// Use this for initialization
@@ -24,11 +26,11 @@ public class PlayerMovement : MonoBehaviour {
 	}
 	
 	void FixedUpdate () {
-        // Movement
+        // Pohyb
         if (Input.GetAxis("Horizontal") != 0)
         {
             Vector3 movementVector = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
-            rb.AddRelativeForce(movementVector * playerSpeedHorizontal);
+            rb.AddForce(movementVector * playerSpeedHorizontal);
         }
 
         // Jumping
@@ -38,13 +40,25 @@ public class PlayerMovement : MonoBehaviour {
             canJump = false;
             Invoke("ResetJump", jumpDelay);
         }
-        // Limit player speed - checks velocity magnitude vector and if it's over the speedLimit,
-        // increases drag
+
+        // Limit player speed - checks velocity magnitude vector and if it's over the speedLimit, limits the speed
         if (rb.velocity.magnitude > playerSpeedLimit)
         {
             rb.velocity = rb.velocity.normalized * playerSpeedLimit;
         }
-	
+
+        // Když není aktivní input, zvýším friction na physics materiálu, aby hráč "neklouzal" po celé ploše při
+        // neaktivním inputu.
+        if (Input.GetAxis("Horizontal") != 0)
+        {
+            gameObject.GetComponent<Collider>().material.dynamicFriction = defaultFriction;
+        }
+        else
+        {
+            gameObject.GetComponent<Collider>().material.dynamicFriction = frictionWhenIdle;
+        }
+
+        Debug.Log(gameObject.GetComponent<Collider>().material.dynamicFriction);
 	}
 
     private void ResetJump()
