@@ -6,7 +6,9 @@ public class PlayerMovement : MonoBehaviour {
     public float playerSpeedHorizontal = 200f;
     public float playerJumpStrength = 500f;
     public float playerSpeedLimit = 100f;
-    public float frictionWhenIdle = 2f; 
+    public float frictionWhenIdle = 2f;
+    public float fallingJumpDistance = 0.1f;
+    public float jumpFallStrength = 400f;
 
     public float jumpDelay = 1f;
     private bool canJump;
@@ -16,7 +18,7 @@ public class PlayerMovement : MonoBehaviour {
 
     private Rigidbody rb;
 
-    
+    // TODO: "Vyhladit" skoky - skok nahoru je moc sekavý, dolů zase moc pomalý    
 
 	// Use this for initialization
 	void Start () {
@@ -59,10 +61,26 @@ public class PlayerMovement : MonoBehaviour {
         }
 
         Debug.Log(gameObject.GetComponent<Collider>().material.dynamicFriction);
+
+        IsGrounded();
+
+        if (IsGrounded() == false)
+        {
+            rb.AddForce(0,-jumpFallStrength,0);
+        }
 	}
 
     private void ResetJump()
     {
         canJump = true;
+    }
+
+
+    // Zjistí, jestli je Player na zemi - vyšle raycast z pozice hráče směrem dolů ve vzdálenosti collider boxu + "rezerva" fallingJumpDistance
+    private bool IsGrounded()
+    {
+        bool onGround = new bool();                 // 
+        onGround = Physics.Raycast(gameObject.transform.position, Vector3.down, gameObject.GetComponent<Collider>().bounds.extents.y + fallingJumpDistance);
+        return onGround;
     }
 }
