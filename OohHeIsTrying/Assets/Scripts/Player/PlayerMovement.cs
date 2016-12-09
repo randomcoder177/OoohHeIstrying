@@ -12,7 +12,7 @@ public class PlayerMovement : MonoBehaviour {
     public float sprintModifier = 2f;
 
     public float jumpDelay = 1f;
-    private bool canJump;
+
 
     private float defaultFriction = 0f;
     private float playerSpeedHorizontal; // pomocná proměnná, při startu nabude stejné hodnoty, jako defaultPlayerSpeed
@@ -21,47 +21,55 @@ public class PlayerMovement : MonoBehaviour {
     private Rigidbody rb;
 
     // TODO: "Vyhladit" skoky - skok nahoru je moc sekavý, dolů zase moc pomalý 
-    // TODO: vyřešit omezení rychlosti při pohybu ve skoku směrem dolů+do strany - capne se rychlost a hráč padá pomaleji   
+    // TODO: vyřešit omezení rychlosti při pohybu ve skoku směrem dolů+do strany - capne se rychlost a hráč padá pomaleji)
+
+    
+    private enum PlayerState
+    {
+        state_Standing,
+        state_Move,
+        state_Jump,
+        state_Duck,
+        state_Fall,
+        state_Sprint,
+        state_Slide,
+        state_Roll,
+        state_Dive
+
+    };
+    private PlayerState state_;   
 
 	// Use this for initialization
 	void Start () {
-        canJump = true;
+
         playerSpeedHorizontal = defaultPlayerSpeed;
         rb = GetComponent<Rigidbody>();
 	
 	}
 	
 	void FixedUpdate () {
-        // Pohyb
-        if (Input.GetAxis("Horizontal") != 0)
-        {
-            Vector3 movementVector = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
-            rb.AddForce(movementVector * playerSpeedHorizontal);
-        }
 
-        // Sprint
-        switch (Input.GetButton("Sprint"))
+        switch (state_)
         {
-            case true:
-                playerSpeedHorizontal = defaultPlayerSpeed * sprintModifier;
-                break;
-            case false:
-                playerSpeedHorizontal = defaultPlayerSpeed;
-                break;
-            default:
-                Debug.Log("Něco je brutálně špatně se sprintem (skript PlayerMovement)");
+            case PlayerState.state_Standing:
+                if (Input.GetAxis("Horizontal") != 0)
+                {
+                    PlayerMove();
+                }
+                else if (Input.GetButton("Duck"))
+                {
+                    PlayerDuck();
+                }
+                else if (Input.GetButton("Jump"))
+                {
+                    PlayerJump();
+                }
                 break;
         }
 
-        // Jumping - pokud je hráč na zemi, tak skáče pomocí Jump buttonu
-        if (Input.GetButton("Jump") && canJump == true)
-        {
-            
-            if(IsGrounded() == true)
-            {
-                rb.AddForce(Vector3.up * playerJumpStrength);
-            }
-        }
+
+        
+        
 
         // Limit player speed - checks velocity magnitude vector and if it's over the speedLimit, limits the speed
         if (rb.velocity.x > playerSpeedLimit)
@@ -86,10 +94,6 @@ public class PlayerMovement : MonoBehaviour {
         //Debug.Log(gameObject.GetComponent<Collider>().material.dynamicFriction);
 	}
 
-    private void ResetJump()
-    {
-        canJump = true;
-    }
 
 
     // Zjistí, jestli je Player na zemi - vyšle raycast z pozice hráče směrem dolů ve vzdálenosti collider boxu + "rezerva" fallingJumpDistance
@@ -99,4 +103,48 @@ public class PlayerMovement : MonoBehaviour {
         onGround = Physics.Raycast(gameObject.transform.position, Vector3.down, gameObject.GetComponent<Collider>().bounds.extents.y + fallingJumpDistance);
         return onGround;
     }
+
+
+    // Pohyb do stran
+    private void PlayerMove()
+    {
+        {
+            Vector3 movementVector = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
+            rb.AddForce(movementVector * playerSpeedHorizontal);
+        }
+    }
+
+    // Sprint - zdvojnásobím rychlost když je inputlej Sprint, jinak default speed
+    private void PlayerSprint()
+    {
+        switch (Input.GetButton("Sprint"))
+        {
+            case true:
+                playerSpeedHorizontal = defaultPlayerSpeed * sprintModifier;
+                break;
+            case false:
+                playerSpeedHorizontal = defaultPlayerSpeed;
+                break;
+            default:
+                Debug.Log("Něco je brutálně špatně se sprintem (skript PlayerMovement)");
+                break;
+        }
+    }
+
+    private void PlayerDuck()
+    {
+
+    }
+
+    private void PlayerJump()
+    {
+        {
+
+            if (IsGrounded() == true)
+            {
+                rb.AddForce(Vector3.up * playerJumpStrength);
+            }
+        }
+    }
+        
 }
